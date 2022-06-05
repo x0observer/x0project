@@ -1,36 +1,37 @@
-//SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 import "./Wallet.sol";
-import "hardhat/console.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 
 
-contract WalletBuilder is Ownable {
+contract WalletBuilder{
+
     
+    address owner;
+    mapping (address => uint) public wallets;
+    
+    event CreateWallet(address _newWalletAddress, uint _createdTimestamp);
 
-    constructor() public {
+    constructor() {
         owner = msg.sender;
     }
 
-    address private owner;
-    address[] private walletsAddress;
+
+    function createWallet() public returns(address){
+        require(owner == msg.sender, "Permission denied");
+        Wallet newWallet = new Wallet(msg.sender);
+        address newWalletAddress = address(newWallet);
+        uint createdTimestamp = block.timestamp;
+        wallets[newWalletAddress] = createdTimestamp;
+        emit CreateWallet(newWalletAddress, createdTimestamp);
+        return newWalletAddress;
+    }
+
+    function getOwner() public view returns(address){
+        return owner;
+    }
+
+}
+
     
 
 
-    function createWallet() public onlyOwner returns (address wallet){
-        /*
-        Deployed container for wallet by root 
-        */
 
-        Wallet newWallet = new Wallet();
-        walletsAddress.push(address(newWallet));
-        return address(newWallet);
-    }
-
-    function withdrawAll(address[] memory addresses) public onlyOwner{
-        require(owner == msg.sender, "Permission denied");
-    }
-
-
-
-}
